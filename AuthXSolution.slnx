@@ -1,3 +1,6 @@
 <Solution>
+  <Project Path="AuthX.Application/AuthX.Application.csproj" Id="230cec73-564d-4480-b0d5-33f234bc016b" />
+  <Project Path="AuthX.Domain/AuthX.Domain.csproj" Id="ad14b439-762e-452c-afb0-953f5ac0953d" />
+  <Project Path="AuthX.Infrastructure/AuthX.Infrastructure.csproj" Id="77d05dea-212b-4259-a7e7-454f453cc8a9" />
   <Project Path="AuthX/AuthX.csproj" />
 </Solution>
