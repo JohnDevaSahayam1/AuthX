@@ -13,6 +13,6 @@ namespace AuthX.Domain.Entities
         public string Bio { get; set; }
 
         // One Author → Many Books
-        public ICollection<Book> Books { get; set; }
+        public ICollection<Book> Books { get; set; } = new List<Book>();
     }
 }
