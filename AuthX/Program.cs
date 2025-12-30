@@ -2,6 +2,7 @@ using AuthX.Application.Interfaces;
 using AuthX.Infrastructure.Data;
 using AuthX.Infrastructure.Repositories;
 using AuthX.Infrastructure.Services;
+using AuthX.Middlewares;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -40,6 +41,8 @@ options.UseSqlServer(builder.Configuration.GetConnectionString("AuthXIdentityCon
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped(typeof(IService<>), typeof(Service<>));
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // Identity Configuration
 builder.Services.AddIdentityCore<IdentityUser>()
@@ -87,6 +90,9 @@ builder.Services.AddAuthentication(options =>
 
 
 var app = builder.Build();
+
+//Configure Middleware
+app.UseExceptionHandlingMiddleware();
 
 if (app.Environment.IsDevelopment())
 {

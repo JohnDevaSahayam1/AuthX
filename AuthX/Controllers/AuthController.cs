@@ -1,4 +1,4 @@
-﻿using AuthX.Application.DTOs;
+﻿    using AuthX.Application.DTOs;
 using AuthX.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -11,88 +11,26 @@ namespace AuthX.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly ITokenRepository _tokenRepository;
+        private readonly IAuthService _authService;
 
-        public AuthController(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, ITokenRepository tokenRepository)
+        public AuthController(IAuthService authService)
         {
-            _userManager = userManager;
-            _roleManager = roleManager;
-            _tokenRepository = tokenRepository;
+            _authService = authService;
         }
 
-        [HttpPost("Register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequestDTO dto)
+        [HttpPost("register")]
+        public async Task<IActionResult> Register(RegisterRequestDTO dto)
         {
-            if (dto == null)
-                return BadRequest("Invalid request");
-
-            var existingUser = await _userManager.FindByNameAsync(dto.UserName);
-            if (existingUser != null)
-                return BadRequest("User already exists");
-
-            var user = new IdentityUser
-            {
-                UserName = dto.UserName,
-                Email = dto.UserName,
-            };
-
-            var createResult = await _userManager.CreateAsync(user, dto.Password);
-
-            if (!createResult.Succeeded)
-                return BadRequest(createResult.Errors);
-
-            if (dto.Roles != null && dto.Roles.Any())
-            {
-                foreach (var role in dto.Roles)
-                {
-                    if (!await _roleManager.RoleExistsAsync(role))
-                    {
-                        await _roleManager.CreateAsync(new IdentityRole(role));
-                    }
-                }
-
-                var roleResult = await _userManager.AddToRolesAsync(user, dto.Roles);
-
-                if (!roleResult.Succeeded)
-                    return BadRequest(roleResult.Errors);
-            }
-
-            return Ok(new
-            {
-                message = "User registered successfully",
-                user = user.UserName,
-                roles = dto.Roles
-            });
+            var result = await _authService.RegisterAsync(dto);
+            return Ok(new { message = result });
         }
-
 
         [HttpPost("login")]
         [AllowAnonymous]
-        public async Task<IActionResult> Login([FromBody] LoginRequestDTO request)
+        public async Task<IActionResult> Login(LoginRequestDTO dto)
         {
-            var user = await _userManager.FindByEmailAsync(request.UserName);
-            if (user == null)
-                return Unauthorized("Invalid username or password.");
-
-            var isPasswordValid = await _userManager.CheckPasswordAsync(user, request.Password);
-            if (!isPasswordValid)
-                return Unauthorized("Invalid username or password.");
-
-            var roles = await _userManager.GetRolesAsync(user);
-
-            var token = _tokenRepository.CreateJWtToken(user, roles.ToList());
-
-            return Ok(new LoginResponseDTO
-            {
-                UserName = user.UserName!,
-                Email = user.Email!,
-                Roles = roles,
-                AccessToken = token,
-                TokenType = "Bearer"
-            });
+            var response = await _authService.LoginAsync(dto);
+            return Ok(response);
         }
-
     }
 }
